@@ -102,3 +102,6 @@ jobs:
           npm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # What the .npmrc written by actions/setup-node interpolates. Harmless
+          # and empty under OIDC trusted publishing.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
