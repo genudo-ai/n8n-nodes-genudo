@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-genudo",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Sales", "Marketing"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/loopx/genudo-n8n-nodes?tab=readme-ov-file#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/loopx/genudo-n8n-nodes?tab=readme-ov-file"
+			}
+		]
+	}
+}
