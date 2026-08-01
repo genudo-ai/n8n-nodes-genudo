@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-genudo",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "n8n community node for the Genudo platform — conversations, opportunities, and knowledge tables",
 	"license": "MIT",
 	"homepage": "https://genudo.ai",
