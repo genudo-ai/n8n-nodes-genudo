@@ -140,8 +140,12 @@ Genudo returns a consistent envelope on failure, surfaced by the node as the HTT
 
 ## Compatibility
 
-Requires n8n 1.x or later. Tested against n8n 1.123 and 2.x, Node.js 20+.
-The package has zero runtime dependencies.
+Requires n8n 1.x or later, on Node.js 20 or newer. Built with
+[`@n8n/node-cli`](https://www.npmjs.com/package/@n8n/node-cli) against nodes API version 1, in
+strict mode for n8n Cloud eligibility.
+
+The package declares **zero runtime dependencies** — only a peer dependency on `n8n-workflow`,
+which your n8n instance already provides.
 
 ## Resources
 
