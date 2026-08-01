@@ -1,5 +1,6 @@
 import type {
 	IAuthenticateGeneric,
+	Icon,
 	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
@@ -10,35 +11,41 @@ export class GenudoApi implements ICredentialType {
 
 	displayName = 'Genudo API';
 
-	// Link to your community node's README
-	documentationUrl = 'https://github.com/loopx/n8n-nodes-genudo?tab=readme-ov-file#credentials';
+	icon: Icon = {
+		light: 'file:../nodes/Genudo/genudo.svg',
+		dark: 'file:../nodes/Genudo/genudo.dark.svg',
+	};
+
+	documentationUrl = 'https://github.com/genudo-ai/n8n-nodes-genudo?tab=readme-ov-file#credentials';
 
 	properties: INodeProperties[] = [
 		{
-			displayName: 'API Key',
-			name: 'apiKey',
+			displayName: 'Access Token',
+			name: 'accessToken',
 			type: 'string',
 			typeOptions: { password: true },
 			required: true,
 			default: '',
+			description:
+				'Personal access token created in Genudo Console under Settings → Developer → API Tokens. Give it the scopes for the operations you plan to use, plus knowledge:read so the connection test can run.',
 		},
 	];
 
-	// TODO: confirm auth header name against https://api.genudo.ai/docs/guide/authentication
 	authenticate: IAuthenticateGeneric = {
 		type: 'generic',
 		properties: {
 			headers: {
-				'x-api-key': '={{$credentials.apiKey}}',
+				Authorization: '=Bearer {{$credentials.accessToken}}',
 			},
 		},
 	};
 
+	// ponytail: knowledge-tables is the only scope-cheap authenticated GET Genudo documents;
+	// a token without knowledge:read will fail the test with 403 but still work for its own scopes.
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.genudo.ai',
-			// TODO: point at a cheap authenticated GET once endpoint mapping is done
-			url: '/api/v1/knowledge-tables',
+			url: '/api/user/knowledge-tables',
 		},
 	};
 }
