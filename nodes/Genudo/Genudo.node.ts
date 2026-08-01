@@ -1,6 +1,7 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
-import { userDescription } from './resources/user';
-import { companyDescription } from './resources/company';
+import { conversationDescription } from './resources/conversation';
+import { knowledgeTableDescription } from './resources/knowledgeTable';
+import { opportunityDescription } from './resources/opportunity';
 
 export class Genudo implements INodeType {
 	description: INodeTypeDescription = {
@@ -38,18 +39,23 @@ export class Genudo implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'User',
-						value: 'user',
+						name: 'Conversation',
+						value: 'conversation',
 					},
 					{
-						name: 'Company',
-						value: 'company',
+						name: 'Knowledge Table',
+						value: 'knowledgeTable',
+					},
+					{
+						name: 'Opportunity',
+						value: 'opportunity',
 					},
 				],
-				default: 'user',
+				default: 'conversation',
 			},
-			...userDescription,
-			...companyDescription,
+			...conversationDescription,
+			...knowledgeTableDescription,
+			...opportunityDescription,
 		],
 	};
 }
