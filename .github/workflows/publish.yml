@@ -80,6 +80,9 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'npm'
+          # Writes the .npmrc that both OIDC trusted publishing and NPM_TOKEN
+          # auth need. Without it the publish step has no registry configured.
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies
         run: 'npm ci --ignore-scripts'
