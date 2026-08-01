@@ -16,7 +16,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/loopx/n8n-nodes-genudo.git"
+		"url": "https://github.com/genudo-ai/n8n-nodes-genudo.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
