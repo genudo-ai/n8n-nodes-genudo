@@ -11,7 +11,7 @@ export class GenudoApi implements ICredentialType {
 	displayName = 'Genudo API';
 
 	// Link to your community node's README
-	documentationUrl = 'https://github.com/loopx/genudo-n8n-nodes?tab=readme-ov-file#credentials';
+	documentationUrl = 'https://github.com/loopx/n8n-nodes-genudo?tab=readme-ov-file#credentials';
 
 	properties: INodeProperties[] = [
 		{
