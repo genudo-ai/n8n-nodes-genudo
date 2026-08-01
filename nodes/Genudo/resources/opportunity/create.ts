@@ -190,16 +190,14 @@ export const opportunityCreateDescription: INodeProperties[] = [
 						value: 'lost',
 					},
 					{
-						name: 'Paused',
-						value: 'paused',
-					},
-					{
 						name: 'Won',
 						value: 'won',
 					},
 				],
 				default: 'active',
-				description: 'Status of the opportunity',
+				// The reference docs also list "paused", but the live API rejects it with
+				// "The selected status is invalid." — that value belongs to conversations.
+				description: 'Status of the opportunity. Won and Lost require the pipeline to have a stage of that nature.',
 				routing: {
 					send: {
 						type: 'body',

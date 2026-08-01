@@ -23,7 +23,9 @@ export const knowledgeTableDeletePointsDescription: INodeProperties[] = [
 		routing: {
 			send: {
 				type: 'body',
-				property: 'default_ids',
+				// The reference docs name this field default_ids, but the live API rejects that
+				// with "The ids field is required." and accepts `ids` holding default_id values.
+				property: 'ids',
 			},
 		},
 	},
