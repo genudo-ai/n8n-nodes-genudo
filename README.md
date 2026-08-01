@@ -158,6 +158,7 @@ which your n8n instance already provides.
 
 ## Version history
 
+- **0.1.2** — Package author set to the Genudo team address.
 - **0.1.1** — Documentation and packaging fixes; first release published via npm trusted publishing.
 - **0.1.0** — First release. Conversation (Send Message, Update), Opportunity (Create, Get, Update)
   and Knowledge Table (List Tables, List Columns, List Points, Upsert Points, Delete Points).

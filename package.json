@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-genudo",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "n8n community node for the Genudo platform — conversations, opportunities, and knowledge tables",
 	"license": "MIT",
 	"homepage": "https://genudo.ai",
@@ -12,7 +12,7 @@
 	],
 	"author": {
 		"name": "Genudo",
-		"email": "loopx.tech1@gmail.com"
+		"email": "genudo.tech@gmail.com"
 	},
 	"repository": {
 		"type": "git",

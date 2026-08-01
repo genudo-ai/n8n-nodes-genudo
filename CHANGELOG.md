@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Package author is now `Genudo <genudo.tech@gmail.com>`, replacing the address carried over from
+  the project scaffold. This is the address the n8n Creator Portal mails its ownership
+  verification code to.
+
 ## 0.1.1
 
 - Docs: state compatibility accurately — built against nodes API version 1 in strict mode, with
