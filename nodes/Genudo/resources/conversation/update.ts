@@ -20,16 +20,14 @@ export const conversationUpdateDescription: INodeProperties[] = [
 				displayName: 'Notes',
 				name: 'notes',
 				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-					multipleValueButtonText: 'Add Note',
-				},
-				default: [],
-				description: 'Freeform notes. Replaces the conversation’s existing notes list.',
+				default: '',
+				description:
+					'Freeform notes, comma-separated or an expression returning an array. Replaces the conversation’s existing notes list.',
 				routing: {
 					send: {
 						type: 'body',
 						property: 'notes',
+						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},

@@ -209,16 +209,15 @@ export const opportunityCreateDescription: INodeProperties[] = [
 				displayName: 'Tags',
 				name: 'tags',
 				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-					multipleValueButtonText: 'Add Tag',
-				},
-				default: [],
-				description: 'Tag names to attach, created if they do not exist yet',
+				default: '',
+				placeholder: 'vip,hot',
+				description:
+					'Tag names to attach, created if they do not exist yet. Comma-separated, or an expression returning an array.',
 				routing: {
 					send: {
 						type: 'body',
 						property: 'tags',
+						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},

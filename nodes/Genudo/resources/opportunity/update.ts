@@ -104,17 +104,15 @@ export const opportunityUpdateDescription: INodeProperties[] = [
 				displayName: 'Deleted Tags',
 				name: 'deletedTags',
 				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-					multipleValueButtonText: 'Add Tag ID',
-				},
-				default: [],
-				description: 'IDs of the tags to remove from this opportunity',
+				default: '',
+				placeholder: '110,111',
+				description:
+					'IDs of the tags to remove from this opportunity. Comma-separated, or an expression returning an array.',
 				routing: {
 					send: {
 						type: 'body',
 						property: 'deleted_tags',
-						value: '={{ $value.map(Number) }}',
+						value: '={{ (typeof $value === "string" ? $value.split(",") : $value).map(Number).filter(n => !isNaN(n)) }}',
 					},
 				},
 			},
@@ -194,16 +192,15 @@ export const opportunityUpdateDescription: INodeProperties[] = [
 				displayName: 'Tags',
 				name: 'tags',
 				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-					multipleValueButtonText: 'Add Tag',
-				},
-				default: [],
-				description: 'Tag names to add, created if they do not exist yet',
+				default: '',
+				placeholder: 'vip,hot',
+				description:
+					'Tag names to add, created if they do not exist yet. Comma-separated, or an expression returning an array.',
 				routing: {
 					send: {
 						type: 'body',
 						property: 'tags',
+						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},

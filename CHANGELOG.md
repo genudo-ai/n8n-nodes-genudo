@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0
+
+### Fixed
+- **Array fields could not be mapped from previous nodes.** `Default IDs`, `Tags`, `Deleted Tags`
+  and `Notes` were declared as `multipleValues` string lists. n8n stores those as fixed lists, so an
+  expression returning an array — the normal way to feed data from an upstream node — was split
+  character by character instead of being used as a list. In practice this made bulk Delete Points
+  and dynamic tagging impossible in a real workflow.
+
+  These are now plain string fields that accept **either** a comma-separated list typed by hand
+  **or** an expression returning an array. Existing manually-entered values keep working.
+
 ## 0.1.2
 
 - Package author is now `Genudo <genudo.tech@gmail.com>`, replacing the address carried over from
