@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+### Added
+- **Opportunity → Get by Contact** (`GET /api/user/contacts/{identifier}/opportunities`): every
+  opportunity of a contact across pipelines, newest first, one item each. Contact ID or phone, with
+  an optional Pipeline ID filter.
+- **Opportunity → Create** accepts **Contact ID** to open a further opportunity on an existing
+  contact, and the `pending` status. Contact email/phone are only required when no Contact ID is given.
+- **Genudo Web Channel** node (Initiate Conversation, Send Message with attachments, Get Messages) and
+  **Genudo Web Channel Trigger**, which receives AI replies and verifies the HMAC-SHA256 signature
+  and timestamp. Uses a new **Genudo Web Channel API** credential (Basic auth).
+- README: connecting Genudo MCP through n8n's MCP Client Tool, the `mcp:use` scope.
+
+### Notes
+- `pending` on Create comes from the reference docs, which previously listed a `paused` status the
+  live API rejected. It is not verified against a live token.
+
 ## 0.2.0
 
 ### Fixed

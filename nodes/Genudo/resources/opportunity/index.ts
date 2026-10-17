@@ -11,6 +11,11 @@ const showOnlyForLookupByIdentifier = {
 	resource: ['opportunity'],
 };
 
+const showOnlyForGetByContact = {
+	operation: ['getByContact'],
+	resource: ['opportunity'],
+};
+
 const unwrapData = {
 	postReceive: [
 		{
@@ -59,6 +64,20 @@ export const opportunityDescription: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get by Contact',
+				value: 'getByContact',
+				action: 'Get the opportunities of a contact',
+				description:
+					'List every opportunity of a contact across all pipelines, newest first. Returns one item per opportunity.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/user/contacts/{{$parameter.contactIdentifier}}/opportunities',
+					},
+					output: unwrapData,
+				},
+			},
+			{
 				name: 'Update',
 				value: 'update',
 				action: 'Update an opportunity',
@@ -87,13 +106,28 @@ export const opportunityDescription: INodeProperties[] = [
 			'Numeric opportunity ID, or a contact phone number in digits-only form with country code prefix and no "+" (for example 201062691152)',
 	},
 	{
+		displayName: 'Contact ID or Phone',
+		name: 'contactIdentifier',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: showOnlyForGetByContact,
+		},
+		description:
+			'Numeric contact ID, or a contact phone number in digits-only form with country code prefix and no "+" (for example 201062691152). A numeric value is tried as a contact ID first, then as a phone number. Returns no items when nothing matches.',
+	},
+	{
 		displayName: 'Options',
 		name: 'options',
 		type: 'collection',
 		placeholder: 'Add Option',
 		default: {},
 		displayOptions: {
-			show: showOnlyForLookupByIdentifier,
+			show: {
+				operation: ['get', 'update', 'getByContact'],
+				resource: ['opportunity'],
+			},
 		},
 		options: [
 			{
@@ -102,7 +136,7 @@ export const opportunityDescription: INodeProperties[] = [
 				type: 'number',
 				default: 0,
 				description:
-					'Restrict a phone lookup to a single pipeline. Ignored when the identifier is a numeric ID.',
+					'Restrict the lookup to a single pipeline. Ignored when the identifier is a numeric opportunity ID.',
 				routing: {
 					send: {
 						type: 'query',

@@ -42,11 +42,25 @@ export const opportunityCreateDescription: INodeProperties[] = [
 				type: 'string',
 				placeholder: 'name@email.com',
 				default: '',
-				description: 'Email of the contact. Required when no contact phone is given.',
+				description: 'Email of the contact. Required when neither a contact phone nor a contact ID is given.',
 				routing: {
 					send: {
 						type: 'body',
 						property: 'contact.email',
+					},
+				},
+			},
+			{
+				displayName: 'Contact ID',
+				name: 'contactId',
+				type: 'number',
+				default: 0,
+				description:
+					'Open a further opportunity on an existing contact. Always creates a new opportunity and joins the contact’s existing conversation. The contact must already have an opportunity in one of your pipelines (see Get by Contact). The contact name, email, phone and priority fields are ignored when this is set.',
+				routing: {
+					send: {
+						type: 'body',
+						property: 'contact_id',
 					},
 				},
 			},
@@ -70,7 +84,7 @@ export const opportunityCreateDescription: INodeProperties[] = [
 				placeholder: '201062691152',
 				default: '',
 				description:
-					'Phone of the contact, digits only with country code prefix and no "+". Required when no contact email is given.',
+					'Phone of the contact, digits only with country code prefix and no "+". Required when neither a contact email nor a contact ID is given.',
 				routing: {
 					send: {
 						type: 'body',
@@ -188,6 +202,10 @@ export const opportunityCreateDescription: INodeProperties[] = [
 					{
 						name: 'Lost',
 						value: 'lost',
+					},
+					{
+						name: 'Pending',
+						value: 'pending',
 					},
 					{
 						name: 'Won',

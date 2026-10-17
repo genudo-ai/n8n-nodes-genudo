@@ -5,6 +5,7 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
+import { buildMultipart, type MultipartFile } from '../../multipart';
 
 const MAX_FILES = 10;
 
@@ -15,8 +16,6 @@ const showOnlyForSendMessage = {
 
 /**
  * Genudo only accepts attachments as multipart/form-data with a repeated `files[]` field.
- * ponytail: the body is assembled by hand instead of pulling in form-data / relying on a
- * global FormData, so the package keeps zero runtime dependencies.
  */
 export async function attachFiles(
 	this: IExecuteSingleFunctions,
@@ -43,37 +42,26 @@ export async function attachFiles(
 		);
 	}
 
-	const boundary = `----n8nGenudoBoundary${Date.now().toString(16)}`;
-	const parts: Buffer[] = [];
-
 	const message = (requestOptions.body as IDataObject | undefined)?.message;
-	if (typeof message === 'string' && message !== '') {
-		parts.push(
-			Buffer.from(
-				`--${boundary}\r\nContent-Disposition: form-data; name="message"\r\n\r\n${message}\r\n`,
-			),
-		);
-	}
-
+	const files: MultipartFile[] = [];
 	for (const field of fields) {
 		const binaryData = this.helpers.assertBinaryData(field);
-		const buffer = await this.helpers.getBinaryDataBuffer(field);
-		const fileName = (binaryData.fileName ?? field).replace(/"/g, '');
-		parts.push(
-			Buffer.from(
-				`--${boundary}\r\nContent-Disposition: form-data; name="files[]"; filename="${fileName}"\r\n` +
-					`Content-Type: ${binaryData.mimeType ?? 'application/octet-stream'}\r\n\r\n`,
-			),
-		);
-		parts.push(buffer);
-		parts.push(Buffer.from('\r\n'));
+		files.push({
+			fileName: binaryData.fileName ?? field,
+			mimeType: binaryData.mimeType ?? 'application/octet-stream',
+			buffer: await this.helpers.getBinaryDataBuffer(field),
+		});
 	}
-	parts.push(Buffer.from(`--${boundary}--\r\n`));
 
-	requestOptions.body = Buffer.concat(parts);
+	const { body, contentType } = buildMultipart(
+		typeof message === 'string' && message !== '' ? { message } : {},
+		'files[]',
+		files,
+	);
+	requestOptions.body = body;
 	requestOptions.headers = {
 		...requestOptions.headers,
-		'Content-Type': `multipart/form-data; boundary=${boundary}`,
+		'Content-Type': contentType,
 	};
 
 	return requestOptions;

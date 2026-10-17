@@ -59,8 +59,9 @@ docker restart <container>
 
 | Operation | API call | Notes |
 | --- | --- | --- |
-| Create | `POST /api/user/opportunities` | Pipeline ID is required. Optional stage, name, notes, status, context metadata, tags, test flag, and contact name / email / phone / priority. A contact email or phone must be given. |
+| Create | `POST /api/user/opportunities` | Pipeline ID is required. Optional stage, name, notes, status, context metadata, tags, test flag, and contact name / email / phone / priority. Give a contact email or phone to match-or-create the contact (returns that contact's current opportunity if it has one), or a **Contact ID** to open a *further* opportunity on an existing contact. |
 | Get | `GET /api/user/opportunities/{identifier}` | Look up by opportunity ID **or** by contact phone (digits only, country code, no `+`). Use the **Pipeline ID** option to disambiguate a phone that exists in several pipelines. |
+| Get by Contact | `GET /api/user/contacts/{identifier}/opportunities` | Every opportunity of a contact across all pipelines, newest first, one item each. Takes a contact ID or phone; **Pipeline ID** narrows it. Returns no items (not an error) when nothing matches. |
 | Update | `PUT /api/user/opportunities/{identifier}` | Partial update — only the fields you set are sent. Adds tags by name and removes them by tag ID. |
 
 ### Knowledge Table
@@ -72,6 +73,24 @@ docker restart <container>
 | List Points | `GET /api/user/knowledge-tables/{id}/points` | Returns the rows. **Return All** follows the `next_page_offset` cursor automatically; otherwise use **Limit** and the **Next Page Offset** option to page manually. |
 | Upsert Points | `PUT /api/user/knowledge-tables/{id}/points` | Bulk create/update. Rows are matched by `default_id` — an existing row with the same one is updated in place. |
 | Delete Points | `DELETE /api/user/knowledge-tables/{id}/points` | Removes rows by `default_id`. |
+
+### Genudo Web Channel
+
+A separate node for [web channels](https://api.genudo.ai/docs/reference/web-channel/overview): your
+backend drives the chat and you own the UI. It uses its own **Genudo Web Channel API** credential,
+not the access token.
+
+| Operation | API call | Notes |
+| --- | --- | --- |
+| Initiate Conversation | `POST /api/user/web-chat/initiate` | Optional. Opens or resumes a conversation (idempotent per contact ID), validates the channel, and registers name / email / phone. |
+| Send Message | `POST {messages_webhook}` | Posts a customer message to the receiver host from the credential. Text and/or up to 10 binary attachments, 5 MB each. Returns the stored `message_id`; the AI reply arrives on your callback URL. |
+| Get Messages | `GET /api/user/messages/webchat` | History for a contact ID or conversation ID, newest first. **Return All** pages through automatically. |
+
+**Genudo Web Channel Trigger** receives the AI reply. Paste its Production URL into the channel's
+Callback URL in the Genudo Console. Every request is verified against the
+`X-Genudo-Signature` HMAC-SHA256 header and rejected with `403` if it is forged, malformed or older
+than 5 minutes. The workflow receives `{ event, client_id, contact_id, message_id, text, timestamp }`.
+Delivery is at-least-once, so make downstream handling idempotent on `message_id`.
 
 Every operation returns the `data` payload of the Genudo response envelope rather than the raw
 `{ status, code, message, data }` wrapper, so downstream nodes see the record directly.
@@ -96,16 +115,37 @@ Scope each token for the operations you plan to run:
 | --- | --- |
 | `messages:send` | Conversation → Send Message |
 | `conversations:write` | Conversation → Update |
-| `opportunities:read` | Opportunity → Get |
+| `opportunities:read` | Opportunity → Get, Get by Contact |
 | `opportunities:write` | Opportunity → Create, Update |
 | `knowledge:read` | Knowledge Table → List Tables, List Columns, List Points |
 | `knowledge:write` | Knowledge Table → Upsert Points, Delete Points |
+| `mcp:use` | Not used by this node. Needed to connect Genudo's MCP server (see below). |
 
 Tokens can be revoked from the same page at any time; a revoked token starts failing with `401` on
 its next request.
 
 > The credential's **Test** button calls `GET /api/user/knowledge-tables`, so a token without
 > `knowledge:read` reports a `403` there even though it still works for the scopes it does have.
+
+### Web Channel credentials
+
+Web channels authenticate with HTTP Basic auth, separate from account tokens. Create the channel in
+the Genudo Console (pipeline, callback URL, optional allowed origins / IPs), then create **Genudo Web
+Channel API** credentials with its **Client ID** (`wc_…`), **Client Secret** and **Messages Webhook
+URL**. The **Test** button calls Initiate with a fixed `n8n-credential-test` contact, so the channel
+must be linked to a pipeline with an active subscription and credits.
+
+## Genudo MCP in n8n
+
+Genudo's MCP server (`https://api.genudo.ai/mcp`, 32 tools — pipelines, stages, actions, variables,
+contacts, analytics) is not part of this node; use n8n's built-in **MCP Client Tool** on an AI Agent:
+
+1. Endpoint URL `https://api.genudo.ai/mcp`, Server Transport **HTTP Streamable**.
+2. Authentication **Bearer**, with a Genudo token that has the `mcp:use` scope plus the scopes of the
+   tools you want the agent to call.
+
+Use this node for deterministic steps (create a lead, send a message) and MCP when an AI agent should
+decide what to do.
 
 ## Usage
 
@@ -158,6 +198,7 @@ which your n8n instance already provides.
 
 ## Version history
 
+- **0.3.0** — Opportunity → Get by Contact; Create accepts a Contact ID and the `pending` status. New Genudo Web Channel node and reply trigger. Docs for MCP and the full scope list.
 - **0.2.0** — Array fields (Default IDs, Tags, Deleted Tags, Notes) now accept expressions from previous nodes.
 - **0.1.2** — Package author set to the Genudo team address.
 - **0.1.1** — Documentation and packaging fixes; first release published via npm trusted publishing.

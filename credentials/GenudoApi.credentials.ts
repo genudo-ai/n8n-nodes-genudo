@@ -27,7 +27,7 @@ export class GenudoApi implements ICredentialType {
 			required: true,
 			default: '',
 			description:
-				'Token created at https://app.genudo.ai/tokens (Developer → API Keys &amp; Tokens → Create token). Give it the scopes for the operations you plan to use, plus knowledge:read so the connection test can run.',
+				'Token created at https://app.genudo.ai/tokens (Developer → API Keys &amp; Tokens → Create token). Give it the scopes for the operations you plan to use, plus knowledge:read so the connection test can run. Scopes: opportunities:read/write, conversations:write, messages:send, knowledge:read/write, mcp:use (MCP only).',
 		},
 	];
 

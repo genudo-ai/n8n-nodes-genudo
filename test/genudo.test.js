@@ -4,6 +4,11 @@
 const assert = require('node:assert/strict');
 
 const { Genudo } = require('../dist/nodes/Genudo/Genudo.node.js');
+const { GenudoWebChannel } = require('../dist/nodes/GenudoWebChannel/GenudoWebChannel.node.js');
+const {
+	GenudoWebChannelTrigger,
+} = require('../dist/nodes/GenudoWebChannel/GenudoWebChannelTrigger.node.js');
+const { createHmac } = require('node:crypto');
 const { attachFiles } = require('../dist/nodes/Genudo/resources/conversation/sendMessage.js');
 
 const properties = new Genudo().description.properties;
@@ -20,6 +25,7 @@ assert.deepEqual(
 		'create',
 		'deletePoints',
 		'get',
+		'getByContact',
 		'listColumns',
 		'listPoints',
 		'listTables',
@@ -110,6 +116,109 @@ async function main() {
 		}),
 		/No input binary field/,
 	);
+	// --- web channel node ---------------------------------------------------------
+
+	const calls = [];
+	const channelContext = (params, respond) => ({
+		getInputData: () => [{ json: {} }],
+		getNodeParameter: (name, _i, fallback) => (name in params ? params[name] : fallback),
+		getCredentials: async () => ({ messagesWebhook: 'https://receiver.test/web-chat/message' }),
+		getNode: () => ({ name: 'Genudo Web Channel' }),
+		continueOnFail: () => false,
+		helpers: {
+			httpRequestWithAuthentication: async (credential, options) => {
+				assert.equal(credential, 'genudoWebChannelApi');
+				calls.push(options);
+				return respond(options);
+			},
+			assertBinaryData: (_i, property) => ({ fileName: `${property}.txt`, mimeType: 'text/plain' }),
+			getBinaryDataBuffer: async (_i, property) => Buffer.from(`contents of ${property}`),
+		},
+	});
+	const run = (params, respond) =>
+		new GenudoWebChannel().execute.call(channelContext(params, respond));
+
+	// Initiate sends only the fields that were set and unwraps the envelope.
+	let [[initiated]] = await run(
+		{ operation: 'initiate', initiateFields: { contactId: 'abc', name: 'Ali' } },
+		() => ({ data: { contact_id: 'abc', conversation_id: 7 } }),
+	);
+	assert.deepEqual(calls.at(-1).body, { contact_id: 'abc', name: 'Ali' });
+	assert.equal(calls.at(-1).url, 'https://api.genudo.ai/api/user/web-chat/initiate');
+	assert.equal(initiated.json.conversation_id, 7);
+
+	// Send Message goes to the credential's receiver host as JSON when there are no files.
+	let [[sent]] = await run(
+		{ operation: 'sendMessage', contactId: 'abc', message: 'hi', sendAttachments: false },
+		() => ({ status: true, data: { message_id: 'm1' } }),
+	);
+	assert.equal(calls.at(-1).url, 'https://receiver.test/web-chat/message');
+	assert.deepEqual(calls.at(-1).body, { contact_id: 'abc', message: 'hi' });
+	assert.deepEqual(sent.json, { contact_id: 'abc', message_id: 'm1' });
+
+	// ...and as multipart with a `files` field (not `files[]`) when attachments are on.
+	await run(
+		{
+			operation: 'sendMessage',
+			contactId: 'abc',
+			message: '',
+			sendAttachments: true,
+			binaryPropertyNames: 'data',
+		},
+		() => '{"status":true,"data":{"message_id":"m2"}}',
+	);
+	const multipartBody = calls.at(-1).body.toString();
+	assert.match(calls.at(-1).headers['Content-Type'], /^multipart\/form-data; boundary=/);
+	assert.ok(multipartBody.includes('name="contact_id"\r\n\r\nabc'));
+	assert.ok(multipartBody.includes('name="files"; filename="data.txt"'));
+
+	// Get Messages follows pages until last_page.
+	const pages = { 1: ['a', 'b'], 2: ['c'] };
+	const history = await run(
+		{ operation: 'getMessages', lookupBy: 'contactId', lookupContactId: 'abc', returnAll: true },
+		(options) => ({
+			data: {
+				data: pages[options.qs.page].map((id) => ({ id })),
+				last_page: 2,
+			},
+		}),
+	);
+	assert.deepEqual(
+		history[0].map((item) => item.json.id),
+		['a', 'b', 'c'],
+	);
+	assert.equal(calls.at(-1).qs.contact_id, 'abc');
+
+	// --- web channel reply trigger ------------------------------------------------
+
+	const secret = 'shh';
+	const rawBody = Buffer.from('{"event":"message","text":"hello"}');
+	const webhook = async (timestamp, signature) => {
+		let status;
+		const result = await new GenudoWebChannelTrigger().webhook.call({
+			getRequestObject: () => ({
+				headers: { 'x-genudo-timestamp': timestamp, 'x-genudo-signature': signature },
+				rawBody,
+				body: JSON.parse(rawBody),
+			}),
+			getResponseObject: () => ({ status: (code) => ({ json: () => (status = code) }) }),
+			getCredentials: async () => ({ clientSecret: secret }),
+			helpers: { returnJsonArray: (body) => [{ json: body }] },
+		});
+		return { status, result };
+	};
+	const now = String(Math.floor(Date.now() / 1000));
+	const sign = (timestamp) =>
+		'sha256=' + createHmac('sha256', secret).update(`${timestamp}.`).update(rawBody).digest('hex');
+
+	const good = await webhook(now, sign(now));
+	assert.equal(good.status, undefined);
+	assert.equal(good.result.workflowData[0][0].json.text, 'hello');
+
+	assert.equal((await webhook(now, sign(now).replace(/.$/, '0'))).status, 403); // forged
+	assert.equal((await webhook(now, 'sha256=short')).status, 403); // wrong length, must not throw
+	const old = String(Number(now) - 3600);
+	assert.equal((await webhook(old, sign(old))).status, 403); // replay
 }
 
 main().then(
