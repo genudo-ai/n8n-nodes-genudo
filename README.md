@@ -198,6 +198,7 @@ which your n8n instance already provides.
 
 ## Version history
 
+- **0.3.1** — Comma-separated Tags, Deleted Tags, Notes and Default IDs work again; multipart upload hardening.
 - **0.3.0** — Opportunity → Get by Contact; Create accepts a Contact ID and the `pending` status. New Genudo Web Channel node and reply trigger. Docs for MCP and the full scope list.
 - **0.2.0** — Array fields (Default IDs, Tags, Deleted Tags, Notes) now accept expressions from previous nodes.
 - **0.1.2** — Package author set to the Genudo team address.

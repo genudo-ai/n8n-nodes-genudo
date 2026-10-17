@@ -27,7 +27,6 @@ export const conversationUpdateDescription: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'notes',
-						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},

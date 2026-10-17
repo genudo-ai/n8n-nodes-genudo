@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1
+
+### Fixed
+- **Comma-separated list fields were rejected.** `Tags`, `Deleted Tags`, `Notes` and `Default IDs`
+  typed as `a,b,c` failed with `422 The tags field must be an array` on a current n8n. They are now
+  split in code before the request is sent; expressions returning an array still work.
+- **Multipart uploads are hardened.** The boundary is random, and CR/LF and quotes are stripped from
+  field names, file names and MIME types so a crafted binary field cannot inject headers or parts.
+
 ## 0.3.0
 
 ### Added

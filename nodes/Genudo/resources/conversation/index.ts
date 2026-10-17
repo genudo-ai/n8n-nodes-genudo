@@ -1,6 +1,7 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { attachFiles, conversationSendMessageDescription } from './sendMessage';
 import { conversationUpdateDescription } from './update';
+import { splitLists } from '../../lists';
 
 const showOnlyForConversations = {
 	resource: ['conversation'],
@@ -50,6 +51,9 @@ export const conversationDescription: INodeProperties[] = [
 					request: {
 						method: 'PUT',
 						url: '=/api/user/conversations/{{$parameter.conversationId}}',
+					},
+					send: {
+						preSend: [splitLists(['notes'])],
 					},
 					output: {
 						postReceive: [

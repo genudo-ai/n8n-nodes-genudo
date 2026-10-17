@@ -8,6 +8,7 @@ const { GenudoWebChannel } = require('../dist/nodes/GenudoWebChannel/GenudoWebCh
 const {
 	GenudoWebChannelTrigger,
 } = require('../dist/nodes/GenudoWebChannel/GenudoWebChannelTrigger.node.js');
+const { splitLists } = require('../dist/nodes/Genudo/lists.js');
 const { createHmac } = require('node:crypto');
 const { attachFiles } = require('../dist/nodes/Genudo/resources/conversation/sendMessage.js');
 
@@ -219,6 +220,15 @@ async function main() {
 	assert.equal((await webhook(now, 'sha256=short')).status, 403); // wrong length, must not throw
 	const old = String(Number(now) - 3600);
 	assert.equal((await webhook(old, sign(old))).status, 403); // replay
+
+	// --- list fields: comma string or array, in code (not a routing expression) ----
+
+	const split = splitLists(['tags'], ['deleted_tags']);
+	const out = await split.call({}, { body: { tags: ' a, b ,,c', deleted_tags: '1, 2,x', other: 'x,y' } });
+	assert.deepEqual(out.body, { tags: ['a', 'b', 'c'], deleted_tags: [1, 2], other: 'x,y' });
+	const fromArray = await split.call({}, { body: { tags: ['a', 'b'], deleted_tags: ['3'] } });
+	assert.deepEqual(fromArray.body, { tags: ['a', 'b'], deleted_tags: [3] });
+	assert.deepEqual((await split.call({}, { body: {} })).body, {});
 }
 
 main().then(

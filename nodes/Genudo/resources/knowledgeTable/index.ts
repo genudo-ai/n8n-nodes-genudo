@@ -2,6 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 import { knowledgeTableDeletePointsDescription } from './deletePoints';
 import { knowledgeTableListPointsDescription } from './listPoints';
 import { knowledgeTableUpsertPointsDescription } from './upsertPoints';
+import { splitLists } from '../../lists';
 
 const showOnlyForKnowledgeTables = {
 	resource: ['knowledgeTable'],
@@ -39,6 +40,9 @@ export const knowledgeTableDescription: INodeProperties[] = [
 					request: {
 						method: 'DELETE',
 						url: pointsUrl,
+					},
+					send: {
+						preSend: [splitLists(['ids'])],
 					},
 					output: unwrapData,
 				},

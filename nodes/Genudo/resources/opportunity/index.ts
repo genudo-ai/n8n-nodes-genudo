@@ -1,6 +1,8 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { opportunityCreateDescription } from './create';
 import { opportunityUpdateDescription } from './update';
+import { splitLists } from '../../lists';
+
 
 const showOnlyForOpportunities = {
 	resource: ['opportunity'],
@@ -47,6 +49,9 @@ export const opportunityDescription: INodeProperties[] = [
 						method: 'POST',
 						url: '/api/user/opportunities',
 					},
+					send: {
+						preSend: [splitLists(['tags'])],
+					},
 					output: unwrapData,
 				},
 			},
@@ -86,6 +91,9 @@ export const opportunityDescription: INodeProperties[] = [
 					request: {
 						method: 'PUT',
 						url: '=/api/user/opportunities/{{$parameter.identifier}}',
+					},
+					send: {
+						preSend: [splitLists(['tags'], ['deleted_tags'])],
 					},
 					output: unwrapData,
 				},

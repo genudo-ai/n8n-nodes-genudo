@@ -112,7 +112,6 @@ export const opportunityUpdateDescription: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'deleted_tags',
-						value: '={{ (typeof $value === "string" ? $value.split(",") : $value).map(Number).filter(n => !isNaN(n)) }}',
 					},
 				},
 			},
@@ -200,7 +199,6 @@ export const opportunityUpdateDescription: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'tags',
-						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},

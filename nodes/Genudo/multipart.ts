@@ -1,3 +1,8 @@
+import { randomBytes } from 'crypto';
+
+/** CR/LF would let a value end its header line and inject new headers or parts */
+const headerSafe = (value: string) => value.replace(/[\r\n"]/g, '');
+
 export interface MultipartFile {
 	fileName: string;
 	mimeType: string;
@@ -13,13 +18,13 @@ export function buildMultipart(
 	fileField: string,
 	files: MultipartFile[],
 ): { body: Buffer; contentType: string } {
-	const boundary = `----n8nGenudoBoundary${Date.now().toString(16)}`;
+	const boundary = `----n8nGenudoBoundary${randomBytes(16).toString('hex')}`;
 	const parts: Buffer[] = [];
 
 	for (const [name, value] of Object.entries(fields)) {
 		parts.push(
 			Buffer.from(
-				`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`,
+				`--${boundary}\r\nContent-Disposition: form-data; name="${headerSafe(name)}"\r\n\r\n${value}\r\n`,
 			),
 		);
 	}
@@ -27,8 +32,8 @@ export function buildMultipart(
 	for (const file of files) {
 		parts.push(
 			Buffer.from(
-				`--${boundary}\r\nContent-Disposition: form-data; name="${fileField}"; filename="${file.fileName.replace(/"/g, '')}"\r\n` +
-					`Content-Type: ${file.mimeType}\r\n\r\n`,
+				`--${boundary}\r\nContent-Disposition: form-data; name="${fileField}"; filename="${headerSafe(file.fileName)}"\r\n` +
+					`Content-Type: ${headerSafe(file.mimeType)}\r\n\r\n`,
 			),
 		);
 		parts.push(file.buffer);

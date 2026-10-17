@@ -24,7 +24,6 @@ export const knowledgeTableDeletePointsDescription: INodeProperties[] = [
 				// The reference docs name this field default_ids, but the live API rejects that
 				// with "The ids field is required." and accepts `ids` holding default_id values.
 				property: 'ids',
-				value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 			},
 		},
 	},

@@ -235,7 +235,6 @@ export const opportunityCreateDescription: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'tags',
-						value: '={{ typeof $value === "string" ? $value.split(",").map(s => s.trim()).filter(s => s !== "") : $value }}',
 					},
 				},
 			},
